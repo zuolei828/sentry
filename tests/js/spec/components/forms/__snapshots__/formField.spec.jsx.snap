@@ -5,7 +5,7 @@ exports[`FormField + model renders with Form 1`] = `
   allowUndo={false}
   cancelLabel="Cancel"
   className="form-stacked"
-  footerClass="form-actions align-right"
+  footerClass="form-actions"
   model={
     FormModel {
       "api": Client {},
@@ -72,6 +72,7 @@ exports[`FormField + model renders with Form 1`] = `
               alignRight={false}
               disabled={false}
               field={[Function]}
+              flexibleControlStateSize={false}
               id="fieldName"
               inline={true}
               name="fieldName"
@@ -311,34 +312,22 @@ exports[`FormField + model renders with Form 1`] = `
         </InputField>
       </TextField>
     </div>
-    <div
-      className="form-actions align-right"
-      style={
-        Object {
-          "marginTop": 25,
-        }
-      }
+    <StyledFooter
+      className="form-actions"
     >
-      <Observer>
-        <Button
-          alignLabel="left"
-          data-test-id="form-submit"
-          disabled={false}
-          priority="primary"
-          type="submit"
-        >
-          <StyledButton
-            aria-label="Save Changes"
+      <div
+        className="form-actions css-by2clb-StyledFooter e1jxgbzp0"
+      >
+        <Observer>
+          <Button
+            alignLabel="left"
             data-test-id="form-submit"
             disabled={false}
-            onClick={[Function]}
             priority="primary"
-            role="button"
             type="submit"
           >
-            <Component
+            <StyledButton
               aria-label="Save Changes"
-              className="css-1msljz8-StyledButton-getColors eqrebog0"
               data-test-id="form-submit"
               disabled={false}
               onClick={[Function]}
@@ -346,7 +335,7 @@ exports[`FormField + model renders with Form 1`] = `
               role="button"
               type="submit"
             >
-              <button
+              <Component
                 aria-label="Save Changes"
                 className="css-1msljz8-StyledButton-getColors eqrebog0"
                 data-test-id="form-submit"
@@ -356,41 +345,52 @@ exports[`FormField + model renders with Form 1`] = `
                 role="button"
                 type="submit"
               >
-                <ButtonLabel
-                  justify="flex-start"
+                <button
+                  aria-label="Save Changes"
+                  className="css-1msljz8-StyledButton-getColors eqrebog0"
+                  data-test-id="form-submit"
+                  disabled={false}
+                  onClick={[Function]}
                   priority="primary"
+                  role="button"
+                  type="submit"
                 >
-                  <Component
-                    className="css-1emshjx-ButtonLabel eqrebog1"
+                  <ButtonLabel
                     justify="flex-start"
                     priority="primary"
                   >
-                    <Flex
-                      align="center"
+                    <Component
                       className="css-1emshjx-ButtonLabel eqrebog1"
                       justify="flex-start"
+                      priority="primary"
                     >
-                      <Base
+                      <Flex
                         align="center"
-                        className="eqrebog1 css-11rqwwm-ButtonLabel"
+                        className="css-1emshjx-ButtonLabel eqrebog1"
                         justify="flex-start"
                       >
-                        <div
+                        <Base
+                          align="center"
                           className="eqrebog1 css-11rqwwm-ButtonLabel"
-                          is={null}
+                          justify="flex-start"
                         >
-                          Save Changes
-                        </div>
-                      </Base>
-                    </Flex>
-                  </Component>
-                </ButtonLabel>
-              </button>
-            </Component>
-          </StyledButton>
-        </Button>
-      </Observer>
-    </div>
+                          <div
+                            className="eqrebog1 css-11rqwwm-ButtonLabel"
+                            is={null}
+                          >
+                            Save Changes
+                          </div>
+                        </Base>
+                      </Flex>
+                    </Component>
+                  </ButtonLabel>
+                </button>
+              </Component>
+            </StyledButton>
+          </Button>
+        </Observer>
+      </div>
+    </StyledFooter>
   </form>
 </Form>
 `;
