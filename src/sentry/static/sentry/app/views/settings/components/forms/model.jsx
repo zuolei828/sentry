@@ -378,6 +378,10 @@ class FormModel {
   @action
   saveField(id, currentValue) {
     let oldValue = this.initialData[id];
+
+    // Reset field errors before attempting to save
+    this.clearError(id);
+
     let savePromise = this.saveFieldRequest(id, currentValue);
 
     if (!savePromise) return null;
@@ -576,12 +580,21 @@ class FormModel {
       this.formState = FormState.ERROR;
       this.errors.set(id, error);
     } else {
-      this.formState = FormState.READY;
-      this.errors.delete(id);
+      this.clearError(id);
     }
 
     // Field should no longer to "saving", but is not necessarily "ready"
     this.setFieldState(id, FormState.SAVING, false);
+  }
+
+  /**
+   * Clears error on field
+   * @param {String} id Field name
+   */
+  @action
+  clearError(id) {
+    this.formState = FormState.READY;
+    this.errors.delete(id);
   }
 
   @action
