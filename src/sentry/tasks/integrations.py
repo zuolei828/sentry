@@ -1,10 +1,11 @@
 from __future__ import absolute_import
 
-from time import time
+from time import time, mktime
+from datetime import timedelta
 
 from sentry import analytics, features
 from sentry.models import (
-    ExternalIssue, Group, GroupLink, GroupStatus, Integration, Organization, OrganizationIntegration, Repository, User
+    ExternalIssue, Group, GroupLink, GroupStatus, Integration, ObjectStatus, Organization, OrganizationIntegration, Repository, User
 )
 
 from sentry.integrations.migrate import PluginMigrator
@@ -195,20 +196,17 @@ def migrate_repo(repo_id, integration_id, organization_id):
 def kickoff_vsts_subscription_check():
     organization_integrations = OrganizationIntegration.objects.filter(
         integration__provider='vsts',
-        # integration__status=ObjectStatus.VISIBLE,
-        # status=ObjectStatus.VISIBLE,
+        integration__status=ObjectStatus.VISIBLE,
+        status=ObjectStatus.VISIBLE,
     ).select_related('integration')
-    update_interval = time() - 60 * 60 * 60 * 6
+    six_hours_from_now = time() - mktime(timedelta(hours=6).timetuple())
     for org_integration in organization_integrations:
         organization_id = org_integration.organization_id
         integration = org_integration.integration
-        try:
-            subscription = org_integration.integration.metadata['subscription']
-        except KeyError:
-            continue
 
         try:
-            if subscription['check'] > update_interval:
+            if 'subscription' not in integration.metadata or integration.metadata[
+                    'subscription']['check'] > six_hours_from_now:
                 continue
         except KeyError:
             pass
