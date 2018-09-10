@@ -1,6 +1,4 @@
-import moment from 'moment';
 import React from 'react';
-
 import BaseChart from './baseChart';
 import LineSeries from './series/lineSeries';
 
