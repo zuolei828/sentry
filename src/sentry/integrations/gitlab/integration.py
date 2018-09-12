@@ -12,6 +12,8 @@ from sentry.identity.gitlab.provider import GitlabIdentityProvider
 from sentry.integrations import IntegrationInstallation, IntegrationFeatures, IntegrationProvider, IntegrationMetadata
 from sentry.pipeline import NestedPipelineView, PipelineView
 from sentry.utils.http import absolute_uri
+from sentry.integrations.constants import ERR_INTERNAL, ERR_UNAUTHORIZED
+from sentry.integrations.exceptions import ApiError
 
 
 DESCRIPTION = """
@@ -28,10 +30,42 @@ metadata = IntegrationMetadata(
 )
 
 
+API_ERRORS = {
+    404: 'Gitlab returned a 404 Not Found error. If this repository exists, ensure'
+         ' that your installation has permission to access this repository',
+    # ' (https://github.com/settings/installations).',
+    401: ERR_UNAUTHORIZED,
+}
+
+
 class GitlabIntegration(IntegrationInstallation):
 
     def get_client(self):
         pass
+
+    def reinstall(self):
+        installation_id = self.model.external_id.split(':')[1]
+        metadata = self.model.metadata
+        metadata['installation_id'] = installation_id
+        self.model.update(metadata=metadata)
+        self.reinstall_repositories()
+
+    def search_issues(self, query):
+        pass
+
+    def message_from_error(self, exc):
+        if isinstance(exc, ApiError):
+            message = API_ERRORS.get(exc.code)
+            if message:
+                return message
+            return (
+                'Error Communicating with Gitlab (HTTP %s): %s' % (
+                    exc.code, exc.json.get('message', 'unknown error')
+                    if exc.json else 'unknown error',
+                )
+            )
+        else:
+            return ERR_INTERNAL
 
 
 class InstallationForm(forms.Form):
