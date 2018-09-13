@@ -153,6 +153,8 @@ def pytest_configure(config):
 
             'vsts.client-id': 'vsts-client-id',
             'vsts.client-secret': 'vsts-client-secret',
+
+            'trello.api-key': 'trello-api-key',
         }
     )
 

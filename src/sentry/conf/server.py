@@ -1263,6 +1263,7 @@ SENTRY_DEFAULT_INTEGRATIONS = (
     'sentry.integrations.github.GitHubIntegrationProvider',
     'sentry.integrations.github_enterprise.GitHubEnterpriseIntegrationProvider',
     'sentry.integrations.jira.JiraIntegrationProvider',
+    'sentry.integrations.trello.TrelloIntegrationProvider',
     'sentry.integrations.vsts.VstsIntegrationProvider',
     'sentry.integrations.vsts_extension.VstsExtensionIntegrationProvider',
 )
@@ -1272,6 +1273,7 @@ SENTRY_INTERNAL_INTEGRATIONS = (
     'github',
     'github_enterprise',
     'jira',
+    'trello',
     'vsts',
     'vsts-extension',
 )
