@@ -46,6 +46,13 @@ class Environment(Model):
     __repr__ = sane_repr('organization_id', 'name')
 
     @classmethod
+    def is_valid_name(cls, value):
+        """Disallow `/` as environment names are used as URL parameters and
+        there is no sane way to URLencode that value.
+        """
+        return '/' not in value
+
+    @classmethod
     def get_cache_key(cls, organization_id, name):
         return 'env:2:%s:%s' % (organization_id, md5_text(name).hexdigest())
 
