@@ -57,7 +57,7 @@ from sentry.models import (
     Environment, GroupStatus, Organization, TotpInterface, UserReport,
 )
 from sentry.plugins import plugins
-from sentry.rules import EventState
+from sentry.rules import PostProcessState
 from sentry.utils import json
 from sentry.utils.auth import SSO_SESSION_KEY
 
@@ -560,10 +560,11 @@ class RuleTestCase(TestCase):
         return self.rule_cls(**kwargs)
 
     def get_state(self, **kwargs):
+        kwargs.setdefault('event', self.get_event())
         kwargs.setdefault('is_new', True)
         kwargs.setdefault('is_regression', True)
         kwargs.setdefault('is_new_group_environment', True)
-        return EventState(**kwargs)
+        return PostProcessState(**kwargs)
 
     def assertPasses(self, rule, event=None, **kwargs):
         if event is None:

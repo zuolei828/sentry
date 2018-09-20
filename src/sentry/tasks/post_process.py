@@ -77,6 +77,7 @@ def post_process_group(event, is_new, is_regression, is_sample, is_new_group_env
     # in the database due to sampling.
     from sentry.models import Project
     from sentry.models.group import get_group_with_redirect
+    from sentry.rules.base import PostProcessState
     from sentry.rules.processor import RuleProcessor
     from sentry.tasks.servicehooks import process_service_hook
 
@@ -99,7 +100,11 @@ def post_process_group(event, is_new, is_regression, is_sample, is_new_group_env
     # we process snoozes before rules as it might create a regression
     process_snoozes(event.group)
 
-    rp = RuleProcessor(event, is_new, is_regression, is_new_group_environment)
+    rp = RuleProcessor(
+        project=event.project,
+        state=PostProcessState(event, is_new, is_regression, is_new_group_environment),
+        action_type='actions/postprocess',
+    )
     has_alert = False
     # TODO(dcramer): ideally this would fanout, but serializing giant
     # objects back and forth isn't super efficient
