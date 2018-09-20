@@ -234,7 +234,7 @@ class TagStorage(Service):
         """
         raise NotImplementedError
 
-    def get_group_tag_keys(self, project_id, group_id, environment_id, limit=None):
+    def get_group_tag_keys(self, project_id, group_id, environment_id, limit=None, keys=None):
         """
         >>> get_group_tag_key(1, 2, 3)
         """
@@ -396,16 +396,14 @@ class TagStorage(Service):
         """
         raise NotImplementedError
 
-    def get_group_tag_keys_and_top_values(self, project_id, group_id, environment_id, user=None):
-        from sentry.api.serializers import serialize
+    def get_group_tag_keys_and_top_values(self, project_id, group_id, environment_id, keys=None, limit=10):
+        # TODO apply limit to keys? or just values per key
 
-        tag_keys = self.get_group_tag_keys(project_id, group_id, environment_id)
+        tag_keys = self.get_group_tag_keys(project_id, group_id, environment_id, keys=keys)
 
-        return [dict(
-            totalValues=(self.get_group_tag_value_count(
-                project_id, group_id, environment_id, tk.key)
-                if tk.count is None else tk.count),
-            topValues=serialize(self.get_top_group_tag_values(
-                project_id, group_id, environment_id, tk.key, limit=10)),
-            **serialize([tk])[0]
-        ) for tk in tag_keys]
+        for tk in tag_keys:
+            tk.top_values = self.get_top_group_tag_values(project_id, group_id, environment_id, tk.key, limit=limit)
+            if tk.count is None:
+                tk.count = self.get_group_tag_value_count(project_id, group_id, environment_id, tk.key)
+
+        return tag_keys

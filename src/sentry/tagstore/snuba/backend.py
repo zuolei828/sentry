@@ -135,7 +135,7 @@ class SnubaTagStorage(TagStorage):
                 top_values=top_values
             )
 
-    def __get_tag_keys(self, project_id, group_id, environment_id, limit=1000):
+    def __get_tag_keys(self, project_id, group_id, environment_id, limit=1000, keys=None):
         start, end = self.get_time_range()
         filters = {
             'project_id': [project_id],
@@ -143,6 +143,8 @@ class SnubaTagStorage(TagStorage):
         }
         if group_id is not None:
             filters['issue'] = [group_id]
+        if keys is not None:
+            filters['tags_key'] = keys
         aggregations = [
             ['uniq', 'tags_value', 'values_seen'],
             ['count()', '', 'count']
@@ -216,13 +218,15 @@ class SnubaTagStorage(TagStorage):
     def get_group_tag_key(self, project_id, group_id, environment_id, key):
         return self.__get_tag_key_and_top_values(project_id, group_id, environment_id, key, limit=9)
 
-    def get_group_tag_keys(self, project_id, group_id, environment_id, limit=None):
-        return self.__get_tag_keys(project_id, group_id, environment_id, limit=limit)
+    def get_group_tag_keys(self, project_id, group_id, environment_id, limit=None, keys=None):
+        return self.__get_tag_keys(project_id, group_id, environment_id, limit=limit, keys=keys)
 
     def get_group_tag_value(self, project_id, group_id, environment_id, key, value):
         return self.__get_tag_value(project_id, group_id, environment_id, key, value)
 
     def get_group_tag_values(self, project_id, group_id, environment_id, key):
+        # NB this uses a 'top' values function, but the limit is None so it should
+        # return all values for this key.
         key = self.__get_tag_key_and_top_values(project_id, group_id, environment_id, key,
                                                 limit=None, raise_on_empty=False)
         return set(key.top_values)
@@ -273,6 +277,65 @@ class SnubaTagStorage(TagStorage):
     def get_top_group_tag_values(self, project_id, group_id, environment_id, key, limit=3):
         tag = self.__get_tag_key_and_top_values(project_id, group_id, environment_id, key, limit)
         return tag.top_values
+
+    def get_group_tag_keys_and_top_values(self, project_id, group_id, environment_id, user=None, keys=None, limit=10):
+        # Similar to __get_tag_key_and_top_values except we get the top values
+        # for all the keys provided. Limit in this case means the number of top
+        # values for each key, so the total rows returned should be num_keys *
+        # limit.  We also can't use `totals` here to get the number of "other"
+        # values for each key as we only get a single total back, which will be
+        # the total count across all keys.
+        start, end = self.get_time_range()
+        filters = {
+            'project_id': [project_id],
+            'environment': [environment_id],
+        }
+        if keys is not None:
+            filters['tags_key'] = keys
+        if group_id is not None:
+            filters['issue'] = [group_id]
+
+        aggregations = [
+            ['count()', '', 'count'],
+            ['min', SEEN_COLUMN, 'first_seen'],
+            ['max', SEEN_COLUMN, 'last_seen'],
+        ]
+
+        result = snuba.query(
+            start, end, ['tags_key', 'tags_value'], None, filters, aggregations,
+            orderby='-count', limitby=[limit, 'tags_key'],
+            referrer='tagstore.__get_tag_keys_and_top_values'
+        )
+
+        if group_id is None:
+            key_ctor = TagKey
+            value_ctor = TagValue
+        else:
+            key_ctor = functools.partial(GroupTagKey, group_id=group_id)
+            value_ctor = functools.partial(GroupTagValue, group_id=group_id)
+
+        return [
+            key_ctor(
+
+                # TODO we don't know these from the current query, but in the context
+                # of this method, the client usually knows these values from the fact
+                # another call to get_group_tag_keys, so we could fill them in here with
+                # another query, but also it could be a waste of time.
+                values_seen=0,
+                count=0,
+
+                key=key,
+                top_values=[
+                    value_ctor(
+                        key=key,
+                        value=value,
+                        times_seen=data['count'],
+                        first_seen=parse_datetime(data['first_seen']),
+                        last_seen=parse_datetime(data['last_seen']),
+                    ) for value, data in six.iteritems(values)
+                ]
+            ) for key, values in six.iteritems(result)
+        ]
 
     def __get_release(self, project_id, group_id, first=True):
         start, end = self.get_time_range()

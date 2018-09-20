@@ -341,8 +341,11 @@ class LegacyTagStorage(TagStorage):
 
         return transformers[models.GroupTagKey](instance)
 
-    def get_group_tag_keys(self, project_id, group_id, environment_id, limit=None):
+    def get_group_tag_keys(self, project_id, group_id, environment_id, limit=None, keys=None):
         qs = models.GroupTagKey.objects.filter(group_id=group_id)
+
+        if keys is not None:
+            qs = qs.filter(key__in=keys)
 
         if limit is not None:
             qs = qs[:limit]

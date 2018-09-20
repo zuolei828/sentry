@@ -511,12 +511,14 @@ class V2TagStorage(TagStorage):
 
         return transformers[models.GroupTagKey](instance)
 
-    def get_group_tag_keys(self, project_id, group_id, environment_id, limit=None):
+    def get_group_tag_keys(self, project_id, group_id, environment_id, limit=None, keys=None):
         qs = models.GroupTagKey.objects.select_related('_key').filter(
             project_id=project_id,
             group_id=group_id,
             _key__project_id=project_id,
         )
+        if keys is not None:
+            qs = qs.filter(_key__key__in=keys)
 
         qs = self._add_environment_filter(qs, environment_id)
 
