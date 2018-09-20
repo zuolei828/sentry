@@ -458,6 +458,10 @@ EVENT_SCHEMA = {
         'checksum': {},
         'site': TAG_VALUE,
         'received': {},
+
+        # This contains normalization and PII stripping meta data in the same
+        # schema as events.
+        '_meta': {'type': 'object'}
     },
     'required': ['platform', 'event_id'],
     'additionalProperties': True,
